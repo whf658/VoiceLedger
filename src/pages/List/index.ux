@@ -1,0 +1,236 @@
+<template>
+  <div class="page">
+    <div class="stats-row">
+      <div class="stat-card">
+        <text class="stat-val">{{ bills.length }}</text>
+        <text class="stat-label">总笔数</text>
+      </div>
+      <div class="stat-card primary-stat">
+        <text class="stat-val highlight">¥{{ totalAmount }}</text>
+        <text class="stat-label">累计支出</text>
+      </div>
+    </div>
+
+    <div class="list-wrapper">
+      <div class="list-header">
+        <text class="list-title">📋 全部账单</text>
+      </div>
+
+      <div class="empty-box" if="{{ bills.length === 0 }}">
+        <text class="empty-text">还没有记过账哦</text>
+      </div>
+
+      <div class="scroll-content" if="{{ bills.length > 0 }}">
+        <div class="list-row" for="{{ bill in bills }}" onlongpress="onLongPress($idx)">
+          
+          <div class="row-left">
+            <div class="category-dot {{ bill.type === 'income' ? 'dot-income' : 'dot-expense' }}"></div>
+            <div class="text-group">
+              <text class="row-main">{{ bill.category }}</text>
+              <text class="row-sub">{{ bill.desc || bill.rawText }}</text>
+            </div>
+          </div>
+
+          <div class="row-right">
+            <text class="amount-text {{ bill.type === 'income' ? 'amt-income' : 'amt-expense' }}">
+              {{ bill.type === 'income' ? '+' : '-' }}{{ bill.amount }}
+            </text>
+            <text class="date-text">{{ bill.date }}</text>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-area">
+      <text class="set-title">⚙️ 偏好设置</text>
+      
+      <div class="setting-row">
+        <text class="sw-label">震动反馈</text>
+        <switch checked="{{ settings.vibrate }}" onchange="toggleVibrate()"></switch>
+      </div>
+      
+      <div class="setting-row">
+        <text class="sw-label">AI 自动保存</text>
+        <switch checked="{{ settings.autoSave }}" onchange="toggleAutoSave()"></switch>
+      </div>
+
+      <div class="danger-btn" onclick="clearAll()">
+        <text class="danger-text">🗑️ 清空所有数据</text>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import prompt from '@system.prompt'
+
+export default {
+  data: {
+    bills: [],
+    totalAmount: '0.00',
+    settings: { vibrate: true, autoSave: false }
+  },
+  
+  onShow() {
+    this.load()
+  },
+
+  load() {
+    var self = this
+    if (typeof $services === 'undefined' || !$services.storage) return;
+
+    Promise.all([
+      $services.storage.getBills(),
+      $services.storage.getSettings()
+    ]).then(function(results) {
+      var bills = results[0] || []
+      var settings = results[1] || { vibrate: true, autoSave: false }
+      
+      var totalExpense = 0;
+      bills.forEach(function(item) {
+        // 🟢 只统计支出到总额里
+        if (item.type === 'expense' || !item.type) { // 兼容旧数据
+            totalExpense += Number(item.amount || 0)
+        }
+      })
+
+      self.bills = bills
+      self.totalAmount = $utils.formatCurrency(totalExpense)
+      self.settings = settings
+    }).catch(function(err) {
+      console.error('List load failed:', err)
+    })
+  },
+
+  _getSwitchChecked(e) {
+    if (!e) return false
+    if (typeof e.checked === 'boolean') return e.checked
+    if (e.detail && typeof e.detail.checked === 'boolean') return e.detail.checked
+    if (e.detail && e.detail.value != null) return !!e.detail.value
+    return false
+  },
+
+  toggleVibrate(e) {
+    var self = this;
+    var checked = this._getSwitchChecked(e);
+    $services.storage.saveSettings({ vibrate: checked }).then(function(next) { self.settings = next })
+  },
+
+  toggleAutoSave(e) {
+    var self = this;
+    var checked = this._getSwitchChecked(e);
+    $services.storage.saveSettings({ autoSave: checked }).then(function(next) { self.settings = next })
+  },
+
+  clearAll() {
+    var self = this
+    self.bills = []
+    self.totalAmount = '0.00'
+    
+    prompt.showToast({ message: '已清空所有账单' })
+
+    if ($services.storage) {
+      $services.storage.clearBills().catch(function(err) {
+        console.error('Storage clear failed:', err)
+      })
+    }
+  },
+
+  onLongPress(idx) {
+    var self = this
+    var item = (this.bills && this.bills[idx]) ? this.bills[idx] : null
+    if (!item) return
+
+    prompt.showDialog({
+      title: '删除',
+      message: '确认删除此记录？',
+      buttons: [{ text: '取消' }, { text: '删除', color: '#ff4d4f' }],
+      success: function(res) {
+        if (res.index === 1) {
+          $services.storage.deleteBill(item.id).then(function() {
+            self.load() 
+            prompt.showToast({ message: '已删除' })
+          })
+        }
+      }
+    })
+  }
+}
+</script>
+
+<style lang="less">
+.page {
+  flex: 1;
+  background-color: #050505;
+  padding: 30px;
+  flex-direction: column;
+}
+
+.stats-row {
+  flex-direction: row; justify-content: space-between; margin-bottom: 20px;
+  height: 160px; flex-shrink: 0;
+}
+.stat-card {
+  width: 48%; background-color: #141414; border-radius: 24px;
+  padding: 30px; flex-direction: column; justify-content: center;
+}
+.primary-stat { background-color: #1A1A2E; border: 1px solid #2979FF; }
+.stat-val { color: #fff; font-size: 40px; font-weight: bold; }
+.highlight { color: #2979FF; }
+.stat-label { color: #666; font-size: 24px; margin-top: 10px; }
+
+.list-wrapper {
+  flex: 1; flex-direction: column; margin-bottom: 20px; overflow: hidden;
+}
+.list-header { margin-bottom: 10px; }
+.list-title { color: #888; font-size: 26px; }
+
+.scroll-content { flex: 1; flex-direction: column; }
+
+.list-row {
+  flex-direction: row; justify-content: space-between; align-items: center;
+  padding: 24px 30px; border-bottom-width: 1px; border-bottom-color: #222222;
+  background-color: #141414; border-radius: 16px; margin-bottom: 16px;
+}
+
+.row-left { flex-direction: row; align-items: center; }
+.category-dot { width: 16px; height: 16px; border-radius: 8px; margin-right: 20px; }
+
+/* 🟢 圆点颜色区分 */
+.dot-expense { background-color: #FF9100; }
+.dot-income { background-color: #00B578; }
+
+.text-group { flex-direction: column; }
+.row-main { color: #ffffff; font-size: 28px; margin-bottom: 6px; }
+.row-sub { color: #666666; font-size: 24px; }
+
+.row-right { flex-direction: column; align-items: flex-end; }
+.amount-text { font-size: 30px; font-weight: bold; }
+
+/* 🟢 金额颜色区分 */
+.amt-expense { color: #FF9100; }
+.amt-income { color: #00B578; }
+
+.date-text { color: #444444; font-size: 22px; margin-top: 6px; }
+
+.empty-box { flex: 1; justify-content: center; align-items: center; }
+.empty-text { color: #444; font-size: 28px; }
+
+.settings-area {
+  background-color: #141414; border-radius: 24px; padding: 30px;
+  flex-direction: column; flex-shrink: 0;
+}
+.set-title {
+  color: #fff; font-size: 28px; font-weight: bold; margin-bottom: 20px;
+  border-bottom-width: 1px; border-bottom-color: #222; padding-bottom: 20px;
+}
+.setting-row { flex-direction: row; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.sw-label { color: #ccc; font-size: 26px; }
+
+.danger-btn {
+  margin-top: 10px; height: 80px; border: 1px solid #FF4D4F; border-radius: 16px;
+  justify-content: center; align-items: center; background-color: rgba(255, 77, 79, 0.1);
+}
+.danger-text { color: #FF4D4F; font-size: 26px; }
+</style>

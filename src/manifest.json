@@ -1,0 +1,58 @@
+{
+  "package": "com.voiceledger.app",
+  "name": "VoiceLedger",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minPlatformVersion": 1070,
+  "icon": "/assets/images/logo.png",
+  "features": [
+    { "name": "system.prompt" },
+    { "name": "system.router" },
+    { "name": "system.fetch" },
+    { "name": "system.storage" },
+    { "name": "system.vibrator" },
+    { "name": "system.network" },
+    { "name": "service.asr" }
+  ],
+  "permissions": [
+    {
+      "origin": "*"
+    }
+  ],
+  "config": {
+    "logLevel": "debug"
+  },
+  "router": {
+    "entry": "pages/Hello",
+    "pages": {
+      "pages/Hello": {
+        "component": "index"
+      },
+      "pages/Record": {
+        "component": "index"
+      },
+      "pages/List": {
+        "component": "index"
+      },
+      "pages/Advisor": {  
+        "component": "index",
+        "titleBarText": "AI 理财管家"
+      }
+    }
+  },
+  "display": {
+    "titleBarBackgroundColor": "#0b1221",
+    "titleBarTextColor": "#ffffff",
+    "pages": {
+      "pages/Hello": {
+        "titleBarText": "VoiceLedger"
+      },
+      "pages/Record": {
+        "titleBarText": "智能录入"
+      },
+      "pages/List": {
+        "titleBarText": "账单明细"
+      }
+    }
+  }
+}

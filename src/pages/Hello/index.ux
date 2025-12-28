@@ -1,0 +1,358 @@
+<template>
+  <div class="page">
+    <div class="hero-card">
+      <div class="ai-entry" onclick="goAdvisor()">
+        <text class="ai-icon">🤖</text>
+        <text class="ai-text">智能分析</text>
+      </div>
+      <div class="hero-content">
+        <text class="hero-label">本月支出 (CNY)</text>
+        <text class="hero-amount">{{ summary.total }}</text>
+        <div class="hero-badge">
+          <text class="hero-sub">{{ summary.month }} · 共 {{ summary.count }} 笔</text>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <text class="section-title">📊 消费分布</text>
+        <text class="section-tip">Top 3</text>
+      </div>
+      <text if="{{ !topCategories.length }}" class="empty-text">暂无数据，快去记一笔吧~</text>
+      
+      <div class="bar-group">
+        <div class="bar-item" for="{{ item in topCategories }}">
+          <div class="bar-info">
+            <text class="bar-label">{{ item.name }}</text>
+            <text class="bar-val">{{ item.percent }}%</text>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill" style="width: {{ item.percent }}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-head">
+        <text class="section-title">🕒 最近记录</text>
+        <text class="section-link" onclick="goList()">全部 ></text>
+      </div>
+      <text if="{{ !recent.length }}" class="empty-text">空空如也</text>
+      
+      <div class="recent-list">
+        <div class="list-row" for="{{ bill in recent }}">
+          <div class="row-left">
+            <div class="category-dot"></div>
+            <div class="text-group">
+              <text class="row-main">{{ bill.category }}</text>
+              <text class="row-sub">{{ bill.desc || bill.rawText }}</text>
+            </div>
+          </div>
+          <div class="row-right">
+            <text class="amount-text">-{{ bill.amount }}</text>
+            <text class="date-text">{{ bill.date }}</text>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fab" onclick="goRecord()">
+      <text class="fab-icon">🎙️</text>
+      <text class="fab-text">记一笔</text>
+    </div>
+  </div>
+</template>
+
+<script>
+import router from '@system.router'
+export default {
+  data: {
+    summary: { total: '0.00', count: 0, month: '' },
+    topCategories: [],
+    recent: []
+  },
+  onShow: function() { this.loadData() },
+  loadData(){
+    var self = this
+      // 确保 $services 存在防止报错
+      if (typeof $services === 'undefined' || !$services.storage) return;
+
+      $services.storage.getBills().then(function(list) {
+        var bills = list || []
+        var now = new Date()
+        var monthNum = now.getMonth() + 1
+        var month = monthNum < 10 ? '0' + monthNum : '' + monthNum
+        var monthKey = now.getFullYear() + '-' + month
+        var monthBills = bills.filter(function(bill) {
+          return bill.date && bill.date.indexOf(monthKey) === 0
+        })
+        var total = 0
+        monthBills.forEach(function(item) { total += Number(item.amount || 0) })
+
+        var categoryMap = {}
+        monthBills.forEach(function(item) {
+          var key = item.category || '其他'
+          categoryMap[key] = (categoryMap[key] || 0) + Number(item.amount || 0)
+        })
+        var sorted = Object.keys(categoryMap)
+          .map(function(key) { return { name: key, value: Number(categoryMap[key]) } })
+          .sort(function(a, b) { return b.value - a.value })
+        var top3 = sorted.slice(0, 3)
+        var topWithPercent = top3.map(function(entry) {
+          return {
+            name: entry.name,
+            value: entry.value,
+            percent: total ? Math.round((entry.value / total) * 100) : 0
+          }
+        })
+
+        self.summary = {
+          total: $utils.formatCurrency(total),
+          count: monthBills.length,
+          month: monthNum + '月'
+        }
+        self.topCategories = topWithPercent
+        self.recent = bills.slice(0, 3)
+      })
+  },
+  goRecord(){ router.push({ uri: '/pages/Record' }) },
+  goList(){ router.push({ uri: '/pages/List' }) },
+  goAdvisor() {
+    router.push({ uri: '/pages/Advisor' })
+  }
+}
+</script>
+
+<style lang="less">
+.ai-entry {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  flex-direction: row;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 10px 20px;
+  border-radius: 30px;
+}
+.ai-icon { font-size: 30px; margin-right: 8px; }
+.ai-text { color: #fff; font-size: 24px; font-weight: bold; }
+/* 全局深色背景 */
+.page {
+  flex: 1;
+  background-color: #050505;
+  padding: 30px;
+  flex-direction: column;
+}
+
+/* 头部卡片 */
+.hero-card {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  /* 修复：使用 background */
+  background: linear-gradient(to right bottom, #2979FF, #651FFF);
+  border-radius: 40px;
+  margin-bottom: 40px;
+  /* 移除不支持的 box-shadow */
+  padding: 40px;
+  justify-content: center;
+}
+
+.hero-content {
+  flex-direction: column;
+}
+
+.hero-label {
+  color: rgba(255,255,255, 0.7);
+  font-size: 26px;
+  margin-bottom: 10px;
+}
+
+.hero-amount {
+  color: #ffffff;
+  font-size: 80px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.hero-badge {
+  background-color: rgba(255,255,255, 0.2);
+  padding: 8px 20px;
+  border-radius: 20px;
+  align-self: flex-start;
+}
+
+.hero-sub {
+  color: #ffffff;
+  font-size: 24px;
+}
+
+/* 通用卡片容器 */
+.card {
+  background-color: #141414;
+  border-radius: 32px;
+  padding: 30px;
+  margin-bottom: 30px;
+  flex-direction: column;
+}
+
+.section-head {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.section-title {
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.section-tip {
+  color: #666666;
+  font-size: 24px;
+}
+
+.section-link {
+  color: #2979FF;
+  font-size: 26px;
+}
+
+.empty-text {
+  color: #444;
+  font-size: 26px;
+  text-align: center;
+  padding: 20px 0;
+}
+
+/* 进度条样式 */
+.bar-group {
+  flex-direction: column;
+}
+
+.bar-item {
+  margin-bottom: 24px;
+  flex-direction: column;
+}
+
+.bar-info {
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.bar-label {
+  color: #cccccc;
+  font-size: 26px;
+}
+
+.bar-val {
+  color: #888888;
+  font-size: 24px;
+}
+
+.bar-track {
+  height: 16px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.bar-fill {
+  height: 100%;
+  /* 修复：使用 background */
+  background: linear-gradient(to right, #2979FF, #00E5FF);
+  border-radius: 8px;
+}
+
+/* 列表样式 */
+.recent-list {
+  flex-direction: column;
+}
+
+.list-row {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom-width: 1px;
+  border-bottom-color: #222222;
+}
+
+.row-left {
+  flex-direction: row;
+  align-items: center;
+}
+
+.category-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background-color: #FF9100;
+  margin-right: 20px;
+}
+
+.text-group {
+  flex-direction: column;
+}
+
+.row-main {
+  color: #ffffff;
+  font-size: 28px;
+  margin-bottom: 6px;
+}
+
+.row-sub {
+  color: #666666;
+  font-size: 24px;
+}
+
+.row-right {
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.amount-text {
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.date-text {
+  color: #444444;
+  font-size: 22px;
+  margin-top: 6px;
+}
+
+/* 悬浮按钮 - 修复居中和阴影问题 */
+.fab {
+  position: fixed;
+  bottom: 50px;
+  /* 修复：快应用不支持 margin: auto 进行定位居中 */
+  /* 计算公式：(设计稿宽750 - 元素宽280) / 2 = 235 */
+  left: 235px; 
+  width: 280px;
+  height: 100px;
+  /* 修复：使用 background */
+  background: linear-gradient(to right, #FF9100, #FFEA00);
+  border-radius: 50px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  /* 移除不支持的 box-shadow */
+}
+
+.fab-icon {
+  font-size: 32px;
+  margin-right: 10px;
+}
+
+.fab-text {
+  color: #000000;
+  font-weight: bold;
+  font-size: 30px;
+}
+</style>

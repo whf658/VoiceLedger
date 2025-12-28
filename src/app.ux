@@ -1,0 +1,13 @@
+<script>
+import $utils from './helper/utils'
+import $services from './helper/services'
+
+// 将常用方法挂到 global，方便各页面直接调用
+var hook2global = global.__proto__ || global
+hook2global.$utils = $utils
+hook2global.$services = $services
+
+export default {
+  onCreate: function() {}
+}
+</script>
