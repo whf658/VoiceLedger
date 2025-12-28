@@ -69,11 +69,12 @@
 | `yarn prettier-watcher` | 监听文件并实时格式化 |
 
 ## 演示视频
-- 推荐将演示视频放在 `docs/demo.mp4` 并在 README 中使用 HTML 嵌入：
-  ```html
-  <video src="docs/demo.mp4" controls width="600"></video>
-  ```
-- 也可以把视频上传到 Release/Issue 附件或第三方存储，然后在 README 放外链。
+<video src="https://github.com/user-attachments/assets/1841128d-d884-4bac-a69d-7bfe634f9c87" controls width="640" preload="metadata"></video>
+
+如未显示播放器，确认链接可访问，或改用封面图跳转：
+```markdown
+[![点击播放演示](docs/screenshots/record.jpg)](https://github.com/user-attachments/assets/1841128d-d884-4bac-a69d-7bfe634f9c87)
+```
 
 ## 调试与发布
 - IDE：使用官方快应用 IDE 导入项目，支持真机/模拟器、扫码预览、语法提示。
