@@ -9,6 +9,10 @@
 ![理财顾问](docs/screenshots/advisor.jpg)
 > 若图片未显示，请将对应截图放入 `docs/screenshots/`，命名保持一致。
 
+## 技术架构
+![技术架构](docs/architecture.png)
+> 请将上面的架构图文件保存为 `docs/architecture.png`（或同名替换为 `.jpg`），提交后 GitHub 会正常显示。
+
 ## 功能特性
 - 语音录入：`@service.asr` 转写，录音动画与状态提示。
 - AI 解析：`src/helper/services/ai.js` 内置 DeepSeek Prompt，自动抽取金额/分类/日期并判断收支。
@@ -63,6 +67,13 @@
 | `yarn gen YourPageName` | 快速创建新页面 |
 | `yarn prettier` | 全量代码格式化 |
 | `yarn prettier-watcher` | 监听文件并实时格式化 |
+
+## 演示视频
+- 推荐将演示视频放在 `docs/demo.mp4` 并在 README 中使用 HTML 嵌入：
+  ```html
+  <video src="docs/demo.mp4" controls width="600"></video>
+  ```
+- 也可以把视频上传到 Release/Issue 附件或第三方存储，然后在 README 放外链。
 
 ## 调试与发布
 - IDE：使用官方快应用 IDE 导入项目，支持真机/模拟器、扫码预览、语法提示。
