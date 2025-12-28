@@ -7,11 +7,11 @@
 ![AI 记账页](docs/screenshots/record.jpg)
 ![账单列表](docs/screenshots/list.jpg)
 ![理财顾问](docs/screenshots/advisor.jpg)
-> 若图片未显示，请将对应截图放入 `docs/screenshots/`，命名保持一致。
+
 
 ## 技术架构
 ![技术架构](docs/architecture.jpg)
-> 请将上面的架构图文件保存为 `docs/architecture.jgp`，提交后 GitHub 会正常显示。
+
 
 ## 功能特性
 - 语音录入：`@service.asr` 转写，录音动画与状态提示。
@@ -70,11 +70,6 @@
 
 ## 演示视频
 <video src="https://github.com/user-attachments/assets/1841128d-d884-4bac-a69d-7bfe634f9c87" controls width="640" preload="metadata"></video>
-
-如未显示播放器，确认链接可访问，或改用封面图跳转：
-```markdown
-[![点击播放演示](docs/screenshots/record.jpg)](https://github.com/user-attachments/assets/1841128d-d884-4bac-a69d-7bfe634f9c87)
-```
 
 ## 调试与发布
 - IDE：使用官方快应用 IDE 导入项目，支持真机/模拟器、扫码预览、语法提示。
