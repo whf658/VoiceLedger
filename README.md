@@ -10,8 +10,8 @@
 > 若图片未显示，请将对应截图放入 `docs/screenshots/`，命名保持一致。
 
 ## 技术架构
-![技术架构](docs/architecture.png)
-> 请将上面的架构图文件保存为 `docs/architecture.png`（或同名替换为 `.jpg`），提交后 GitHub 会正常显示。
+![技术架构](docs/architecture.jpg)
+> 请将上面的架构图文件保存为 `docs/architecture.jgp`，提交后 GitHub 会正常显示。
 
 ## 功能特性
 - 语音录入：`@service.asr` 转写，录音动画与状态提示。
