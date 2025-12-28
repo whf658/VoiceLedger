@@ -3,10 +3,10 @@
 基于快应用的语音 + AI 记账示例：语音识别转写，DeepSeek Chat 解析金额/分类/日期/收支方向，结果存储本地，适合学习端侧 AI/ASR 的落地方式。
 
 ## 预览
-![首页总览](docs/screenshots/hello.png)
-![AI 记账页](docs/screenshots/record.png)
-![账单列表](docs/screenshots/list.png)
-![理财顾问](docs/screenshots/advisor.png)
+![首页总览](docs/screenshots/hello.jpg)
+![AI 记账页](docs/screenshots/record.jpg)
+![账单列表](docs/screenshots/list.jpg)
+![理财顾问](docs/screenshots/advisor.jpg)
 > 若图片未显示，请将对应截图放入 `docs/screenshots/`，命名保持一致。
 
 ## 功能特性
